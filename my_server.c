@@ -1,7 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socke.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "my_server.h"
+
+int main(int argc, char const *argv[]) {
+  //printf("Size of the size_t is %d", sizeof(size_t));
+  return 0;
+}

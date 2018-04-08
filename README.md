@@ -19,3 +19,9 @@ You will need to create a large file to test this with, in particular, the file 
 Picking the right test file size requires some care. The easiest way is to multiply the size of the send buffer by the number of seconds you need to perform a second request, plus one. For example, if your buffer is 212992, and you want 10 seconds to test a second request, you need a test file of 11*212992 = 2342912 bytes. Then set the download rate equal to the buffer size (212992). This will give you 10 seconds of time to test a second request, whilst still completing the original request in a reasonable amount of time (11 seconds).
 
 Once you have your file ready, run an initial wget for your large file with --limit-rate set to the buffer size. Then run a second instance of wget (without any rate limit) for another, smaller test file. The second test file should be returned whilst the first is still being downloaded. If both succeed you have good evidence that the multi-threading is working correctly. To run multiple instances of wget you can run it in the background using the -b option, but the easiest way is to create multiple ssh sessions in different terminals so you can keep track of each request's progress.
+
+Update 8/4/2018;
+Now working on receiving command line args and create new socket.
+Learn from lab5 and tutorials point about some built-in function from the
+<sys/socket.h> library. (not sure if it is ok to have code that is similar to
+  code provided from the lab. I'll do code acknowledegment. )

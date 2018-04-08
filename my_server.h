@@ -6,3 +6,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <dirent.h>
+
+/*Craete the socket, get ready to listen I assume?*/
+int create_socket(int);

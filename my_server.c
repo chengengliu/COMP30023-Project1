@@ -1,10 +1,11 @@
 #include "my_server.h"
 
-#define MAXSIZE 1024
 
-int main(int argc, char const *argv[]) {
+
+int main(int argc, char **argv) {
   //struct sockaddr_in client_addr;
-  char buffer[MAXSIZE];
+
+  //char buffer[MAXSIZE];
   int port_number, listenid;
   struct sockaddr_in server_address;
 
@@ -15,6 +16,11 @@ int main(int argc, char const *argv[]) {
   port_number = atoi(argv[1]);
   listenid = create_socket(port_number);
   if(bind_socket(&server_address, port_number, listenid)<1){
+    printf("Bind failed\n");
+    exit(1);
+  }
+  if(listen(listenid, QUEUESIZE)<0){
+    printf("Listen failed \n");
     exit(1);
   }
 }

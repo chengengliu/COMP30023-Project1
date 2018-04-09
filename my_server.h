@@ -7,6 +7,9 @@
 #include <arpa/inet.h>
 #include <dirent.h>
 
+#define MAXSIZE 1024
+#define QUEUESIZE 1024
+
 /*Craete the socket, get ready to listen I assume?*/
 int create_socket(int);
 /*Bind the socket with specified address and port Number*/

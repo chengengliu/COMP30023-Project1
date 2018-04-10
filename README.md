@@ -25,3 +25,10 @@ Now working on receiving command line args and create new socket.
 Learn from lab5 and tutorials point about some built-in function from the
 <sys/socket.h> library. (not sure if it is ok to have code that is similar to
   code provided from the lab. I'll do code acknowledegment. )
+
+Update10/4/2018:
+
+The use of threading and compare it with process(more specifically speaking fork()):
+Manager/worker: a single thread, the manager assigns work to other threads, the workers. Typically, the manager handles all input and parcels out work to the other tasks. At least two forms of the manager/worker model are common: static worker pool and dynamic worker pool.
+Pipeline: a task is broken into a series of suboperations, each of which is handled in series, but concurrently, by a different thread. An automobile assembly line best describes this model.
+Peer: similar to the manager/worker model, but after the main thread creates other threads, it participates in the work.

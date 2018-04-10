@@ -9,33 +9,39 @@ int main(int argc, char **argv) {
   int port_number, listenid, newsockid, n;
 
   struct sockaddr_in server_address, client_addrress;
+  pthread_t thread_id;
+
+
   char buffer[256];
   char* path;
 
 
   if (argc < 2){
-    printf("Error. Need port number \n");
+    perror("Error. Need port number \n");
     exit(1);
   }
   if(argc < 3){
-    printf("Error. Need root path \n");
+    perror("Error. Need root path \n");
     exit(1);
   }
   port_number = atoi(argv[1]);
   path = argv[2];
-  printf("%s\n", path);
+  //printf("%s\n", path);
 
   listenid = create_socket(port_number);
   //printf("Listen id is %d\n", listenid);
   if(bind_socket(&server_address, port_number, listenid)<1){
-    printf("Bind failed\n");
+    //printf("Bind failed\n");
+    perror("Bind failed\n");
     exit(1);
   }
   // Announce willingness to accept incoming connection
   if(listen(listenid, QUEUESIZE)<0){
-    printf("Listen failed \n");
+    //printf("Listen failed \n");
+    perror("Listen failed\n");
     exit(1);
   }
+
 
 
 
@@ -44,7 +50,7 @@ int main(int argc, char **argv) {
   /*Now accept a connection */
   /*For now only create one connection */
   socklen_t client_len = sizeof(client_addrress);
-  // Need to test later
+  // Random nonsense I guess
   /*
   while(TRUE){
     testid = accept(listenid,(struct sockaddr *)&client_addrress,
@@ -53,6 +59,22 @@ int main(int argc, char **argv) {
     close(testid);
 
   }*/
+
+  /*Add pthread???? Multi-threading test*/
+  while(newsockid = accept(listenid,(struct sockaddr * )&client_addrress,
+    &client_len)){
+      printf("Connection accepted\n");
+      if(pthread_create(&thread_id, NULL, ))
+
+    }
+
+
+
+
+  //**********single acception (used when doing socket connection test)
+  //These read and write procedure will be dedicated to
+  // pthread to do. But for now, it is just for test use. 
+  /*
 
   newsockid = accept(listenid, (struct sockaddr *)&client_addrress,
     &client_len);
@@ -63,14 +85,18 @@ int main(int argc, char **argv) {
   }
 
   n = read(newsockid, buffer, 255);
-  /*Now the buffer holds information we need */
+  //Now the buffer holds information we need
   if(n < 0){
-    printf("Error reading from the socket\n");
+    //printf("Error reading from the socket\n");
+    perror("Read Error");
     exit(1);
-  }
+  }*/
+
+
+
 
   // Now move to the phase of getting content of GET request in http 1.0
-  
+
 
 
 
@@ -91,7 +117,9 @@ int create_socket(int port_number){
   int listenid, optvalue=0;
 
   if((listenid = socket(AF_INET, SOCK_STREAM, 0))<0){
-    printf("Error when creating the socket\n");
+    //printf("Error when creating the socket\n");
+    perror("Listen Error ");
+
     return -1;
   }
 

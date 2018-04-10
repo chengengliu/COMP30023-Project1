@@ -10,13 +10,15 @@
 
 #define MAXSIZE 1024
 #define QUEUESIZE 1024
-
-extensions[] = {
+//********  NOT SURE HERE. WANNA DO SOMETHING LIKE DIC IN PYTHON???
+//// OR MAYBE TRY ENUM ???
+/*
+extensions[10] = {
   {".html", "HTML"},
   {".jpg", "JPEG"},
   {".css", "CSS"},
   {".js", "JavaScript"}
-}
+};*/
 
 /*Craete the socket, get ready to listen I assume?*/
 int create_socket(int);

@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <dirent.h>
+#include <unistd.h>
 
 #define MAXSIZE 1024
 #define QUEUESIZE 1024

@@ -7,14 +7,24 @@ int main(int argc, char **argv) {
 
   //char buffer[MAXSIZE];
   int port_number, listenid, newsockid, n;
+
   struct sockaddr_in server_address, client_addrress;
   char buffer[256];
+  char* path;
 
 
   if (argc < 2){
     printf("Error. Need port number \n");
+    exit(1);
+  }
+  if(argc < 3){
+    printf("Error. Need root path \n");
+    exit(1);
   }
   port_number = atoi(argv[1]);
+  path = argv[2];
+  printf("%s\n", path);
+
   listenid = create_socket(port_number);
   //printf("Listen id is %d\n", listenid);
   if(bind_socket(&server_address, port_number, listenid)<1){
@@ -27,9 +37,23 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
+
+
+
+
   /*Now accept a connection */
   /*For now only create one connection */
   socklen_t client_len = sizeof(client_addrress);
+  // Need to test later
+  /*
+  while(TRUE){
+    testid = accept(listenid,(struct sockaddr *)&client_addrress,
+    &client_len);
+
+    close(testid);
+
+  }*/
+
   newsockid = accept(listenid, (struct sockaddr *)&client_addrress,
     &client_len);
 
@@ -39,17 +63,25 @@ int main(int argc, char **argv) {
   }
 
   n = read(newsockid, buffer, 255);
+  /*Now the buffer holds information we need */
   if(n < 0){
     printf("Error reading from the socket\n");
     exit(1);
   }
+
+  // Now move to the phase of getting content of GET request in http 1.0
   
-  printf("Here is from the client side%s\n", buffer);
+
+
+
+
+  //Write back to the client side
+  /*
   n = write (newsockid, "Hello World", 18);
   if(n< 0 ){
     printf("ERROR writing to the socket \n");
     exit(1);
-  }
+  }*/
   close(listenid);
   return 0;
 }

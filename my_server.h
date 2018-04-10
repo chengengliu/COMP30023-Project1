@@ -16,3 +16,5 @@ int create_socket(int);
 /*Bind the socket with specified address and port Number*/
 int bind_socket(struct sockaddr_in *server_address, int port_number,
     int listenid);
+
+int get_file_by_name();

@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   }
   port_number = atoi(argv[1]);
   listenid = create_socket(port_number);
-  printf("Listen id is %d\n", listenid);
+  //printf("Listen id is %d\n", listenid);
   if(bind_socket(&server_address, port_number, listenid)<1){
     printf("Bind failed\n");
     exit(1);
@@ -43,15 +43,14 @@ int main(int argc, char **argv) {
     printf("Error reading from the socket\n");
     exit(1);
   }
-
+  
+  printf("Here is from the client side%s\n", buffer);
   n = write (newsockid, "Hello World", 18);
   if(n< 0 ){
     printf("ERROR writing to the socket \n");
     exit(1);
   }
-
   close(listenid);
-
   return 0;
 }
 

@@ -41,29 +41,44 @@ Manipulate/Call the function to find specific file.
 Send
 Close
 */
+// Thread_arg has the client side socket information.
 void * thread_handler(void * thread_arg){
   int sock, read_len;
-  char *buffer, rec_message, root_path;
+  char *buffer, rec_message[MAXSIZE], root_path;
   thread_t *arg = (thread_t *)thread_arg;
 
   sock = arg->sockid;
-  root_path = arg->root_path;
+  root_path = *(arg->root_path);
   /*
   if(ead_len = read(sock, rec_message, MAXSIZE)){
   }*/
   //Keep reading
   // On success, the number of bytes read is returned (zero indicates end
   // of file), and the file position is advanced by this number.
-  while(read_len = read(sock, rec_message, MAXSIZE)>0){
+  while((read_len = read(sock, rec_message, MAXSIZE))>0){
     // End of message specified by the read length
     rec_message[read_len] = '\0';
+
+    write(sock, rec_message, strlen(rec_message));
   }
 
 
+  if(read_len == 0){
+    printf("Client disconnected\n");
+  }
+  if(read_len == -1){
+    printf("Failed to receive\n");
+  }
+  free((thread_t *) thread_arg);
+  pthread_exit(NULL);
   return 0;
 }
 
-int
+void process_request(int client_sock){
+
+}
+
+
 
 
 
@@ -76,7 +91,7 @@ int main(int argc, char **argv) {
 
   //pthread_t thread_id;
   char buffer[256];
-  char* path;
+  char* root_path;
 
   if (argc < 2){
     perror("Error. Need port number \n");
@@ -87,7 +102,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
   port_number = atoi(argv[1]);
-  path = argv[2];
+  root_path = argv[2];
   //printf("%s\n", path);
 
   listenid = create_socket(port_number);
@@ -97,7 +112,7 @@ int main(int argc, char **argv) {
     perror("Bind failed\n");
     exit(1);
   }
-  printf("%d\n", thread_num);
+  //printf("%d\n", thread_num);
   // Announce willingness to accept incoming connection
   if(listen(listenid, QUEUESIZE)<0){
     //printf("Listen failed \n");
@@ -125,7 +140,7 @@ int main(int argc, char **argv) {
     thread_t *args = malloc(sizeof(thread_t));
     args-> sockid = client_sock;
     args-> thread_id = threads[thread_num];
-    args-> root_path = path;   NOT ADDED YET DUDE
+    args-> root_path = root_path;
     //Craete successfully will return value of 0.
     if(pthread_create((threads+thread_num), NULL, thread_handler,
       (void *)&args)){
@@ -135,6 +150,8 @@ int main(int argc, char **argv) {
     //printf("%d\n", thread_num);
     thread_num ++;
   }
+
+
   /**********************Second Version of thread creating
   while(client_sock = accept(listenid,(struct sockaddr * )&client_addrress,
     &client_len)){

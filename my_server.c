@@ -37,21 +37,33 @@ int bind_socket(struct sockaddr_in *server_address, int port_number,
 
 /*This handler should do :
 Read
-Manipulate
+Manipulate/Call the function to find specific file.
 Send
 Close
 */
 void * thread_handler(void * thread_arg){
-  int sock;
-  char *buffer, rec_message;
+  int sock, read_len;
+  char *buffer, rec_message, root_path;
   thread_t *arg = (thread_t *)thread_arg;
+
   sock = arg->sockid;
-
-
+  root_path = arg->root_path;
+  /*
+  if(ead_len = read(sock, rec_message, MAXSIZE)){
+  }*/
+  //Keep reading
+  // On success, the number of bytes read is returned (zero indicates end
+  // of file), and the file position is advanced by this number.
+  while(read_len = read(sock, rec_message, MAXSIZE)>0){
+    // End of message specified by the read length
+    rec_message[read_len] = '\0';
+  }
 
 
   return 0;
 }
+
+int
 
 
 
@@ -113,7 +125,8 @@ int main(int argc, char **argv) {
     thread_t *args = malloc(sizeof(thread_t));
     args-> sockid = client_sock;
     args-> thread_id = threads[thread_num];
-    //args-> root_path = root_path;   NOT ADDED YET DUDE
+    args-> root_path = path;   NOT ADDED YET DUDE
+    //Craete successfully will return value of 0.
     if(pthread_create((threads+thread_num), NULL, thread_handler,
       (void *)&args)){
       perror("Error Pthread");
@@ -121,9 +134,6 @@ int main(int argc, char **argv) {
     }
     //printf("%d\n", thread_num);
     thread_num ++;
-
-
-
   }
   /**********************Second Version of thread creating
   while(client_sock = accept(listenid,(struct sockaddr * )&client_addrress,

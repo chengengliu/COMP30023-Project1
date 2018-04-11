@@ -34,11 +34,21 @@ int bind_socket(struct sockaddr_in *server_address, int port_number,
   }
   return 1;
 }
+
 /*This handler should do :
-
-
+Read
+Manipulate
+Send
+Close
 */
 void * thread_handler(void * thread_arg){
+  int sock;
+  char *buffer, rec_message;
+  thread_t *arg = (thread_t *)thread_arg;
+  sock = arg->sockid;
+
+
+
 
   return 0;
 }
@@ -75,6 +85,7 @@ int main(int argc, char **argv) {
     perror("Bind failed\n");
     exit(1);
   }
+  printf("%d\n", thread_num);
   // Announce willingness to accept incoming connection
   if(listen(listenid, QUEUESIZE)<0){
     //printf("Listen failed \n");
@@ -88,12 +99,13 @@ int main(int argc, char **argv) {
   // I'm thinking maybe the first version(pthread creation) is better than
   // The second version.
   // This is the main loop for threading.
+
   while(TRUE){
     int client_sock = accept(listenid, (struct sockaddr *)&client_addrress,
       &client_len);
 
     if(client_sock < 0){
-      perror("Error on accept connection ");
+      perror("Error on accepting connection ");
       continue;
     }
 
@@ -102,10 +114,12 @@ int main(int argc, char **argv) {
     args-> sockid = client_sock;
     args-> thread_id = threads[thread_num];
     //args-> root_path = root_path;   NOT ADDED YET DUDE
-    if(pthread_create((threads+thread_num), NULL, thread_handler, (void *)&args)){
+    if(pthread_create((threads+thread_num), NULL, thread_handler,
+      (void *)&args)){
       perror("Error Pthread");
       continue;
     }
+    //printf("%d\n", thread_num);
     thread_num ++;
 
 

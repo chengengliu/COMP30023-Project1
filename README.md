@@ -32,3 +32,7 @@ The use of threading and compare it with process(more specifically speaking fork
 Manager/worker: a single thread, the manager assigns work to other threads, the workers. Typically, the manager handles all input and parcels out work to the other tasks. At least two forms of the manager/worker model are common: static worker pool and dynamic worker pool.
 Pipeline: a task is broken into a series of suboperations, each of which is handled in series, but concurrently, by a different thread. An automobile assembly line best describes this model.
 Peer: similar to the manager/worker model, but after the main thread creates other threads, it participates in the work.
+
+Update11/4/2018:
+int socket programming:
+read() is equivalent to recv() with a flags parameter of 0. Other values for the flags parameter change the behaviour of recv(). Similarly, write() is equivalent to send() with flags == 0.

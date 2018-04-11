@@ -17,3 +17,8 @@ It is craeted only becasue since Im not sure how to use the .sh as test...
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
+
+int int main(int argc, char const *argv[]) {
+  
+  return 0;
+}

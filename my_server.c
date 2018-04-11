@@ -49,19 +49,29 @@ void * thread_handler(void * thread_arg){
 
   sock = arg->sockid;
   root_path = *(arg->root_path);
-  /*
-  if(ead_len = read(sock, rec_message, MAXSIZE)){
-  }*/
+
+  if((read_len = read(sock, rec_message, MAXSIZE))<0){
+    perror("Error reading ");
+    exit(1);
+  }
+  printf("%s\n", rec_message);
+  read_len = write(sock, "Hello", strlen(rec_message));
+  if(read_len < 0){
+    perror("Error writing to socket");
+    exit(1);
+  }
   //Keep reading
   // On success, the number of bytes read is returned (zero indicates end
   // of file), and the file position is advanced by this number.
+
+  /*
   while((read_len = read(sock, rec_message, MAXSIZE))>0){
     // End of message specified by the read length
     rec_message[read_len] = '\0';
+    //printf("%s\n", rec_message);
 
     write(sock, rec_message, strlen(rec_message));
-  }
-
+  }*/
 
   if(read_len == 0){
     printf("Client disconnected\n");
@@ -69,7 +79,7 @@ void * thread_handler(void * thread_arg){
   if(read_len == -1){
     printf("Failed to receive\n");
   }
-  free((thread_t *) thread_arg);
+  //free((thread_t *) thread_arg);
   pthread_exit(NULL);
   return 0;
 }
@@ -142,8 +152,8 @@ int main(int argc, char **argv) {
     args-> thread_id = threads[thread_num];
     args-> root_path = root_path;
     //Craete successfully will return value of 0.
-    if(pthread_create((threads+thread_num), NULL, thread_handler,
-      (void *)&args)){
+    if(pthread_create(&(threads[thread_num]), NULL, thread_handler,
+      (void *)args)){
       perror("Error Pthread");
       continue;
     }
@@ -169,6 +179,7 @@ int main(int argc, char **argv) {
   //**********single acception (used when doing socket connection test)*******
   //These read and write procedure will be dedicated to
   // pthread to do. But for now, it is just for test use.
+  /*
 
 
   newsockid = accept(listenid, (struct sockaddr *)&client_addrress,
@@ -185,19 +196,19 @@ int main(int argc, char **argv) {
     //printf("Error reading from the socket\n");
     perror("Read Error");
     exit(1);
-  }
+  }*/
   /*************************************************************************/
 
   // Now move to the phase of getting content of GET request in http 1.0
 
 
   //Write back to the client side
-
+  /*
   n = write (newsockid, "Hello World", 18);
   if(n< 0 ){
     printf("ERROR writing to the socket \n");
     exit(1);
-  }
+  }*/
   close(listenid);
   return 0;
 }

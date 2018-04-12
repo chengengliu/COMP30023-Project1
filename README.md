@@ -36,3 +36,9 @@ Peer: similar to the manager/worker model, but after the main thread creates oth
 Update11/4/2018:
 int socket programming:
 read() is equivalent to recv() with a flags parameter of 0. Other values for the flags parameter change the behaviour of recv(). Similarly, write() is equivalent to send() with flags == 0.
+
+
+Update about string method:
+FROM IBM knowledge center:
+
+Do not use the strtok subroutine in a multithreaded environment. Use the strtok_r subroutine instead.

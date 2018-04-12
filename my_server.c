@@ -49,7 +49,7 @@ void * thread_handler(void * thread_arg){
 
   sock = arg->sockid;
   root_path = *(arg->root_path);
-
+  /*
   if((read_len = read(sock, rec_message, MAXSIZE))<0){
     perror("Error reading ");
     exit(1);
@@ -59,33 +59,77 @@ void * thread_handler(void * thread_arg){
   if(read_len < 0){
     perror("Error writing to socket");
     exit(1);
-  }
+  }*/
   //Keep reading
   // On success, the number of bytes read is returned (zero indicates end
   // of file), and the file position is advanced by this number.
 
-  /*
+
   while((read_len = read(sock, rec_message, MAXSIZE))>0){
     // End of message specified by the read length
     rec_message[read_len] = '\0';
-    //printf("%s\n", rec_message);
 
-    write(sock, rec_message, strlen(rec_message));
-  }*/
+    /*This part is important.
+     After reading from client side, parse that information down
+     And find corresponding fiel and reply*/
 
+    //process_request(*arg, root_path);
+    //write(sock, rec_message, strlen(rec_message));
+  }
+  /*Encount the end of the message? Maybe EOF character*/
+  /*
   if(read_len == 0){
     printf("Client disconnected\n");
-  }
+  }*/
   if(read_len == -1){
     printf("Failed to receive\n");
   }
-  //free((thread_t *) thread_arg);
+  free((thread_t *) thread_arg);
   pthread_exit(NULL);
   return 0;
 }
 
-void process_request(int client_sock){
+void process_request(thread_t arg, char *message){
+  FILE *p;
+  DIR *dir;
+  char *root_path;
+  char file_path[50];
+  int flag = 0;
 
+  root_path = arg.root_path;
+  // To read a first space, the beginning of path
+  // And if the pointer meets the second space, it is the
+  // end of path.
+  char *temp;
+  temp = message;  //temp point at the
+  // Extract url of the file
+  while(*++temp){
+    // If meets a space, that is the start of the url.
+    if(*temp == ' '){
+      flag++;
+    }
+    if(*temp == ' ' && flag==1){
+      //Do something here ? TO make sure the string has been
+      // correctlly extracted ?
+      
+      break;
+    }
+  }
+
+
+  //dir = opendir();
+
+
+
+
+
+
+
+}
+void filetype(char *filename){
+  if(strstr(filename, ".html")){
+
+  }
 }
 
 
@@ -95,7 +139,7 @@ void process_request(int client_sock){
 int main(int argc, char **argv) {
   //struct sockaddr_in client_addr;
   //char buffer[MAXSIZE];
-  int port_number, listenid, newsockid, n, thread_num=0;
+  int port_number, listenid, n, thread_num=0;
   struct sockaddr_in server_address, client_addrress;
   pthread_t threads[THREADNUM];
 
@@ -160,7 +204,6 @@ int main(int argc, char **argv) {
     //printf("%d\n", thread_num);
     thread_num ++;
   }
-
 
   /**********************Second Version of thread creating
   while(client_sock = accept(listenid,(struct sockaddr * )&client_addrress,

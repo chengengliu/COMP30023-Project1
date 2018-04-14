@@ -43,44 +43,44 @@ Close
 */
 // Thread_arg has the client side socket information.
 void * thread_handler(void * thread_arg){
-  int sock, read_len;
-  char *buffer, rec_message[MAXSIZE], root_path;
+  int sock, read_len, nread;
+  //FILE *p;
+  char *return_message;
+  char rec_message[MAXSIZE];
+
+  char buffer[1024];
+  //char *no_found = "404 NOT FOUND";
   thread_t *arg = (thread_t *)thread_arg;
 
   sock = arg->sockid;
-  root_path = *(arg->root_path);
+
   /*
   if((read_len = read(sock, rec_message, MAXSIZE))<0){
     perror("Error reading ");
     exit(1);
-  }
-  printf("%s\n", rec_message);
-  read_len = write(sock, "Hello", strlen(rec_message));
-  if(read_len < 0){
-    perror("Error writing to socket");
-    exit(1);
   }*/
+
+
   //Keep reading
   // On success, the number of bytes read is returned (zero indicates end
   // of file), and the file position is advanced by this number.
-
-
-  while((read_len = read(sock, rec_message, MAXSIZE))>0){
+  read_len = read(sock,rec_message,MAXSIZE);
+  if(read_len < 0){
+    perror("Error reading\n");
+    exit(1);
+  }
+  rec_message[read_len] = '\0';
+  /*while((read_len = read(sock, rec_message, MAXSIZE))>0){
     // End of message specified by the read length
     rec_message[read_len] = '\0';
-
-    /*This part is important.
-     After reading from client side, parse that information down
-     And find corresponding fiel and reply*/
-
-    //process_request(*arg, root_path);
-    //write(sock, rec_message, strlen(rec_message));
-  }
-  /*Encount the end of the message? Maybe EOF character*/
-  /*
-  if(read_len == 0){
-    printf("Client disconnected\n");
+    //printf("%s\n", rec_message);
   }*/
+  /*This part is important.
+   After reading from client side, parse that information down
+   And find corresponding fiel and reply*/
+  printf("%s\n", rec_message);
+  process_request(*arg, rec_message, buffer); // 404 or 200
+
   if(read_len == -1){
     printf("Failed to receive\n");
   }
@@ -89,51 +89,76 @@ void * thread_handler(void * thread_arg){
   return 0;
 }
 
-void process_request(thread_t arg, char *message){
+void process_request(thread_t arg, char *message, char *buffer){
   FILE *p;
   DIR *dir;
-  char *root_path;
-  char file_path[50];
-  int flag = 0;
+  char *root_path, *file_path, abs_path[1024]={0}, *return_message;
+  int counter =0;
 
   root_path = arg.root_path;
   // To read a first space, the beginning of path
   // And if the pointer meets the second space, it is the
   // end of path.
-  char *temp;
-  temp = message;  //temp point at the
-  // Extract url of the file
-  while(*++temp){
-    // If meets a space, that is the start of the url.
-    if(*temp == ' '){
-      flag++;
-    }
-    if(*temp == ' ' && flag==1){
-      //Do something here ? TO make sure the string has been
-      // correctlly extracted ?
-      
+  char temp[1024];
+  strcpy(temp,message);
+  file_path = strtok(temp," ");
+
+  while(file_path!=NULL){
+    file_path = strtok(NULL, " ");
+    counter++;
+    if(counter == 1){
       break;
     }
   }
+  /*File path is extracted hopefully. */
+  /*Now that the absolute path is root_path + file_path*/
+  //printf("%s\n", file_path);
+  strcat(abs_path, root_path);
+  strcat(abs_path, file_path);
 
+  respond(abs_path,arg.sockid,buffer);
 
+  //return p;
+  // Extract url of the file
   //dir = opendir();
-
-
-
-
-
-
-
 }
-void filetype(char *filename){
-  if(strstr(filename, ".html")){
-
+void respond(char *abs_path, int sock, char *buffer){
+  FILE *fp;
+  //char * return_message;
+  fp = fopen(abs_path, "r");
+  //respond_file(p,buffer,sock);
+  if(fp == NULL){
+    strcat(buffer, NOTFOUND);
   }
+  else{
+    strcat(buffer, FOUND);
+    int read = fread(buffer+strlen(FOUND),1,1024,fp);
+  }
+  //Append body after the header. Since only when file is valid.
+  //int read = fread(buffer+strlen(FOUND),1,1024,fp);
+  //write(sock,buffer, read);
+  printf("HELLO\n");
 }
 
-
-
+//void respond_file(FILE *p, char *buffer, int sock){
+  /*
+  while(TRUE){
+    //unsigned char buffer[1024];
+    int read = fread(buffer,1,1024,p);
+    if(read > 0){
+      write(sock,buffer,read);
+    }
+    if(read < 1024){
+      if(feof(p)){
+        printf("File read complete\n");
+      }
+      if(ferror(p)){
+        perror("File reading error");
+        break;
+      }
+    }
+  }*/
+//}
 
 
 int main(int argc, char **argv) {

@@ -64,13 +64,26 @@ void * thread_handler(void * thread_arg){
   //Keep reading
   // On success, the number of bytes read is returned (zero indicates end
   // of file), and the file position is advanced by this number.
+
   read_len = read(sock,rec_message,MAXSIZE);
   if(read_len < 0){
     perror("Error reading\n");
     exit(1);
   }
   rec_message[read_len] = '\0';
-  /*while((read_len = read(sock, rec_message, MAXSIZE))>0){
+
+  char method[1024],url[1024], version[1024];
+  sscanf(rec_message, "%s %s %s", method, url, version);
+
+  char abs_path[1024];
+  strcpy(abs_path,arg->root_path);
+  strcpy(abs_path,url);
+
+  process_url(abs_path,buffer, sock);
+  //write(sock,rec_message,strlen(rec_message));
+  /*
+
+  while((read_len = read(sock, rec_message, MAXSIZE))>0){
     // End of message specified by the read length
     rec_message[read_len] = '\0';
     //printf("%s\n", rec_message);
@@ -78,15 +91,33 @@ void * thread_handler(void * thread_arg){
   /*This part is important.
    After reading from client side, parse that information down
    And find corresponding fiel and reply*/
+
+
+   /*
   printf("%s\n", rec_message);
   process_request(*arg, rec_message, buffer); // 404 or 200
 
   if(read_len == -1){
     printf("Failed to receive\n");
-  }
+  }*/
+
   free((thread_t *) thread_arg);
-  pthread_exit(NULL);
+  //pthread_exit(NULL);
   return 0;
+}
+
+void process_url(char *filename, char *buffer, int sock){
+  FILE *fp;
+  fp =fopen(filename, "r");
+
+
+  strcpy(buffer, FOUND);
+  printf("FOUND FILE\n");
+  int read = fread(buffer+strlen(FOUND), 1,1024,fp);
+  int nwrite = write(sock,buffer, read);
+  if(nwrite<0){
+    perror("Fail to write");
+  }
 }
 
 void process_request(thread_t arg, char *message, char *buffer){
@@ -116,7 +147,7 @@ void process_request(thread_t arg, char *message, char *buffer){
   strcat(abs_path, root_path);
   strcat(abs_path, file_path);
 
-  respond(abs_path,arg.sockid,buffer);
+  //respond(abs_path,arg.sockid,buffer);
 
   //return p;
   // Extract url of the file
@@ -129,15 +160,23 @@ void respond(char *abs_path, int sock, char *buffer){
   //respond_file(p,buffer,sock);
   if(fp == NULL){
     strcat(buffer, NOTFOUND);
+    printf("HelloNotFoundFile\n");
+    printf("HTTP/1.0 404 \n");
   }
   else{
     strcat(buffer, FOUND);
     int read = fread(buffer+strlen(FOUND),1,1024,fp);
+    int nwrite = write(sock,buffer, read);
+    if(nwrite<0){
+      perror("Write fiale\n");
+      return;
+    }
+    printf("HTTP/1.0 200 OK \n");
   }
   //Append body after the header. Since only when file is valid.
   //int read = fread(buffer+strlen(FOUND),1,1024,fp);
   //write(sock,buffer, read);
-  printf("HELLO\n");
+  //printf("HELLO\n");
 }
 
 //void respond_file(FILE *p, char *buffer, int sock){
@@ -182,16 +221,29 @@ int main(int argc, char **argv) {
   }
   port_number = atoi(argv[1]);
   root_path = argv[2];
-  //printf("%s\n", path);
 
-  listenid = create_socket(port_number);
-  //printf("Listen id is %d\n", listenid);
+
+  listenid = socket(AF_INET, SOCK_STREAM, 0);
+  if(listenid<0)
+    perror("Error create socket");
+
+  server_address.sin_family = AF_INET;
+  server_address.sin_port = htons(port_number);
+  server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+  if(bind(listenid,(struct sockaddr*)&server_address,sizeof(server_address))<0){
+    perror("Error bind");
+  }
+
+
+
+  //listenid = create_socket(port_number);
+  /*
   if(bind_socket(&server_address, port_number, listenid)<1){
     //printf("Bind failed\n");
     perror("Bind failed\n");
     exit(1);
-  }
-  //printf("%d\n", thread_num);
+  }*/
+
   // Announce willingness to accept incoming connection
   if(listen(listenid, QUEUESIZE)<0){
     //printf("Listen failed \n");

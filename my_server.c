@@ -48,6 +48,14 @@ void re_success(int fd, char *msg, char *type, char *version){
   write(fd, body, strlen(body));
 
 }
+
+/*This handler should do :
+Read
+Manipulate/Call the function to find specific file.
+Send
+Close
+*/
+
 void * thread_handle_test(void * arg){
   thread_t targ = *(thread_t *)arg;
   char mes[1024];
@@ -56,15 +64,32 @@ void * thread_handle_test(void * arg){
     perror("Error reading\n");
     exit(1);
   }
-  write(targ.sockid,NOTFOUND, sizeof(NOTFOUND));
+  write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
+  char version[1024] = {0}, filepath[1024] = {0}, method[20] = {0};
+  sscanf(mes, "%s %s %s", method, filepath, version);
+
+  char url[1024] = {0};
+  strcat(url,targ.root_path);
+  strcat(url,filepath);
+  /*Url is correct */
+  /***********THis part is not correct as it cannot proceed test.
+   Just stuck there */
+  /* File path is correctly extracted*/
+  /*
+  FILE *fp;
+  fp = fopen(url, "r");
+  if(fp== NULL){
+    write(targ.sockid,NOTFOUND,strlen(NOTFOUND));
+    return NULL;
+  }*/
+
+
+  //write(targ.sockid,NOTFOUND, sizeof(NOTFOUND));
+
   return NULL;
 }
-/*This handler should do :
-Read
-Manipulate/Call the function to find specific file.
-Send
-Close
-*/
+
+
 // Thread_arg has the client side socket information.
 void * thread_handler(void * thread_arg){
   int sock, read_len, nread;

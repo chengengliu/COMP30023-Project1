@@ -20,8 +20,8 @@ int create_socket(int port_number){
   return listenid;
 }
 /*The socket will accept connection to All/Any IPs  */
-int bind_socket(struct sockaddr_in *server_address, int port_number,
-    int listenid){
+int bind_socket(struct sockaddr_in *server_address, int port_number,int listenid){
+
   server_address-> sin_family = AF_INET;
   server_address-> sin_port = htons(port_number);
   // INADDR_ANY is "Any address" in IPV4
@@ -35,6 +35,30 @@ int bind_socket(struct sockaddr_in *server_address, int port_number,
   return 1;
 }
 
+void re_success(int fd, char *msg, char *type, char *version){
+  char buffer[1024];
+  char body[1024];
+
+  sprintf(body, "%s", msg);
+  sprintf(buffer, "%s 200 OK\r\n", version);
+  write(fd,buffer, strlen(buffer));
+  sprintf(buffer, "Content-type: %s\r\n\r\n", type);
+
+  write(fd, buffer, strlen(buffer));
+  write(fd, body, strlen(body));
+
+}
+void * thread_handle_test(void * arg){
+  thread_t targ = *(thread_t *)arg;
+  char mes[1024];
+  int read_len= read(targ.sockid, mes, 1024);
+  if(read_len<0){
+    perror("Error reading\n");
+    exit(1);
+  }
+  write(targ.sockid,NOTFOUND, sizeof(NOTFOUND));
+  return NULL;
+}
 /*This handler should do :
 Read
 Manipulate/Call the function to find specific file.
@@ -45,25 +69,14 @@ Close
 void * thread_handler(void * thread_arg){
   int sock, read_len, nread;
   //FILE *p;
-  char *return_message;
+  //char *return_message;
   char rec_message[MAXSIZE];
 
   char buffer[1024];
   //char *no_found = "404 NOT FOUND";
-  thread_t *arg = (thread_t *)thread_arg;
+  thread_t arg = *(thread_t *)thread_arg;
 
-  sock = arg->sockid;
-
-  /*
-  if((read_len = read(sock, rec_message, MAXSIZE))<0){
-    perror("Error reading ");
-    exit(1);
-  }*/
-
-
-  //Keep reading
-  // On success, the number of bytes read is returned (zero indicates end
-  // of file), and the file position is advanced by this number.
+  sock = arg.sockid;
 
   read_len = read(sock,rec_message,MAXSIZE);
   if(read_len < 0){
@@ -72,14 +85,43 @@ void * thread_handler(void * thread_arg){
   }
   rec_message[read_len] = '\0';
 
-  char method[1024],url[1024], version[1024];
-  sscanf(rec_message, "%s %s %s", method, url, version);
+  char method[1024]={0},re_url[1024] = {0}, version[1024] = {0};
+  char filename[40]={0}, extension[10]={0};
+  sscanf(rec_message, "%s %s %s", method, re_url, version);
 
-  char abs_path[1024];
-  strcpy(abs_path,arg->root_path);
-  strcpy(abs_path,url);
+  printf("%s\n", re_url);
+  char *temp;
+  temp = re_url;
+
+
+  int counter =0;
+  while(*temp){
+    if(*temp == '.'){
+      break;
+    }
+    temp ++;
+    counter ++;
+  }
+
+
+
+
+  //sscanf(re_url,"/%s.%s",filename,extension);
+
+  //printf("Extension is %s\n", extension);
+
+  char abs_path[1024]={0};
+
+  strcpy(abs_path,arg.root_path);
+  strcpy(abs_path+strlen(arg.root_path),re_url);
+  printf("%s\n", abs_path);
 
   process_url(abs_path,buffer, sock);
+  int nwrite = write(sock,buffer, strlen(buffer));
+  if(nwrite < 0)
+    perror("Error writing back");
+
+
   //write(sock,rec_message,strlen(rec_message));
   /*
 
@@ -101,7 +143,7 @@ void * thread_handler(void * thread_arg){
     printf("Failed to receive\n");
   }*/
 
-  free((thread_t *) thread_arg);
+  //free((thread_t *) thread_arg);
   //pthread_exit(NULL);
   return 0;
 }
@@ -109,16 +151,35 @@ void * thread_handler(void * thread_arg){
 void process_url(char *filename, char *buffer, int sock){
   FILE *fp;
   fp =fopen(filename, "r");
-
+  /*
+  if(fp==NULL){
+    strcpy(buffer, NOTFOUND);
+    write(sock,buffer, sizeof(buffer));
+    printf("%s\n", buffer);
+    return;
+  }*/
+  if(fp == NULL){
+    return;
+  }
 
   strcpy(buffer, FOUND);
-  printf("FOUND FILE\n");
-  int read = fread(buffer+strlen(FOUND), 1,1024,fp);
-  int nwrite = write(sock,buffer, read);
-  if(nwrite<0){
-    perror("Fail to write");
-  }
+  //printf("FOUND FILE\n");
+  int read = fread(buffer+strlen(FOUND),1,1024,fp);
+  /*
+  char response[] = "HTTP/1.0 200 OK\r\n"
+          "Content-Type: text/html; charset=UTF-8\r\n\r\n"
+          "<doctype !html><html><head><title></title>"
+          "<style>body"
+          "h1 { font-size:4cm; text-align: center; color: black;"
+          "}</style></head>"
+          "<body><h1>Not Found  (HTTP 404)</h1></body></html>\r\n";*/
+  //printf("%d client socket\n", sock);
+  //int nwrite = send(sock, buffer, read, 0);
+  //write(sock,buffer, read);
+  printf("%s\n", buffer);
 }
+
+
 
 void process_request(thread_t arg, char *message, char *buffer){
   FILE *p;
@@ -208,7 +269,7 @@ int main(int argc, char **argv) {
   pthread_t threads[THREADNUM];
 
   //pthread_t thread_id;
-  char buffer[256];
+  char buffer[1024];
   char* root_path;
 
   if (argc < 2){
@@ -225,13 +286,14 @@ int main(int argc, char **argv) {
 
   listenid = socket(AF_INET, SOCK_STREAM, 0);
   if(listenid<0)
-    perror("Error create socket");
+    perror("Error on listening");
 
   server_address.sin_family = AF_INET;
   server_address.sin_port = htons(port_number);
-  server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+  server_address.sin_addr.s_addr = INADDR_ANY;
   if(bind(listenid,(struct sockaddr*)&server_address,sizeof(server_address))<0){
     perror("Error bind");
+    exit(1);
   }
 
 
@@ -273,7 +335,8 @@ int main(int argc, char **argv) {
     args-> thread_id = threads[thread_num];
     args-> root_path = root_path;
     //Craete successfully will return value of 0.
-    if(pthread_create(&(threads[thread_num]), NULL, thread_handler,
+    printf("%d client socket\n", args->sockid);
+    if(pthread_create(&(threads[thread_num]), NULL, thread_handle_test,
       (void *)args)){
       perror("Error Pthread");
       continue;

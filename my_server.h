@@ -13,8 +13,8 @@
 #define MAXSIZE 1024
 #define QUEUESIZE 1024
 #define THREADNUM 200
-#define NOTFOUND "HTTP/1.0 404\n"
-#define FOUND "HTTP/1.0 200 OK\n"
+#define NOTFOUND "HTTP/1.0 404\r\n\r\n"
+#define FOUND "HTTP/1.0 200 OK\r\nConten-type: text/html\r\n\r\n"
 
 struct thread{
   char * root_path;
@@ -40,4 +40,8 @@ void process_request(thread_t arg, char *message, char *buffer);
 void respond(char *abs_path, int sock, char *buffer);
 
 void process_url(char *filename, char* buffer, int sock);
+
+void re_success(int fd, char *msg, char *type, char *version);
+
+void * thread_handle_test(void * arg);
 //void respond_file(FILE *p, char *buffer, int sock);

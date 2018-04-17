@@ -64,28 +64,38 @@ void * thread_handle_test(void * arg){
     perror("Error reading\n");
     exit(1);
   }
-  write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
+  //write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
   char version[1024] = {0}, filepath[1024] = {0}, method[20] = {0};
   sscanf(mes, "%s %s %s", method, filepath, version);
-
+  //write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
   char url[1024] = {0};
   strcat(url,targ.root_path);
   strcat(url,filepath);
+
+  //write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
   /*Url is correct */
   /***********THis part is not correct as it cannot proceed test.
    Just stuck there */
   /* File path is correctly extracted*/
-  /*
+
   FILE *fp;
+  char buffer[1024]={0};
   fp = fopen(url, "r");
+  //write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
+  if(fp){
+    write(targ.sockid,FOUND, strlen(FOUND));
+    int nread = fread(buffer,1,1024,fp);
+    write(targ.sockid, buffer, strlen(buffer));
+    //close()
+  }
+
   if(fp== NULL){
     write(targ.sockid,NOTFOUND,strlen(NOTFOUND));
     return NULL;
-  }*/
-
+  }
 
   //write(targ.sockid,NOTFOUND, sizeof(NOTFOUND));
-
+  close(targ.sockid);
   return NULL;
 }
 

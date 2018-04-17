@@ -35,6 +35,15 @@ int bind_socket(struct sockaddr_in *server_address, int port_number,int listenid
   return 1;
 }
 
+void *thread_handle_test(void *arg){
+  thread_t targ = *(thread_t *)arg;
+  char msg[1024]={0};
+
+  int readlen= read(targ.sockid, msg, 1024);
+  write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
+  return NULL;
+}
+
 void re_success(int fd, char *msg, char *type, char *version){
   char buffer[1024];
   char body[1024];
@@ -56,7 +65,7 @@ Send
 Close
 */
 
-void * thread_handle_test(void * arg){
+void * thread_handler(void * arg){
   thread_t targ = *(thread_t *)arg;
   char mes[1024];
   int read_len= read(targ.sockid, mes, 1024);
@@ -72,36 +81,96 @@ void * thread_handle_test(void * arg){
   strcat(url,targ.root_path);
   strcat(url,filepath);
 
+  char header[200] = {0}, extension[200] = {0}, content_type[200] = {0};
+  int counter =0;
+  char* temp = filepath;
+
+  while(*temp){
+    if(*temp == '.'){
+      break;
+    }
+    counter++, temp++;
+  }
+
+  strncpy(extension, filepath+counter, strlen(filepath)-counter);
+  strcat(header, FOUND);
+  strcat(content_type, "Content-Type: ");
+
+  //extension = ext_extension(filepath); // i.e. get .html/...etc
+  //printf("%s\n", extension);
+  if(strcmp(extension, ".html")==0){
+    strcat(content_type, "text/html");
+  }
+  if(strcmp(extension,".css") == 0){
+    strcat(content_type, "text/css");
+  }
+  if(strcmp(extension,".jpg")==0){
+    strcat(content_type, "image/jpeg");
+  }
+  if(strcmp(extension, ".js")==0){
+    strcat(content_type, "text/javascript");
+  }
+  //strcat(header, extension);
+  strcat(content_type, "\r\n\r\n");
+
+
+  printf("%s", header);
+  printf("%s", content_type);
+  //write(targ.sockid,header, strlen(header));
+
+
   //write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
   /*Url is correct */
   /***********THis part is not correct as it cannot proceed test.
    Just stuck there */
   /* File path is correctly extracted*/
 
+
   FILE *fp;
   char buffer[1024]={0};
   fp = fopen(url, "r");
   //write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
   if(fp){
-    write(targ.sockid,FOUND, strlen(FOUND));
-    int nread = fread(buffer,1,1024,fp);
-    write(targ.sockid, buffer, strlen(buffer));
+    write(targ.sockid,header, strlen(header));
+    write(targ.sockid, content_type, strlen(content_type));
+    int nread = fread(buffer,1,sizeof(buffer),fp);
+    write(targ.sockid, buffer, nread);
+    //close(targ.sockid);
     //close()
   }
 
   if(fp== NULL){
     write(targ.sockid,NOTFOUND,strlen(NOTFOUND));
+    close(targ.sockid);
     return NULL;
   }
 
   //write(targ.sockid,NOTFOUND, sizeof(NOTFOUND));
   close(targ.sockid);
+  //printf("Client server closed %d\n", targ.sockid);
   return NULL;
 }
 
+/*
+char * ext_extension(char *filepath){
+  char extension[20] = {0};
+  int counter =0;
+  char* temp = filepath;
+  while(*temp){
+    if(*temp == '.'){
+      break;
+    }
+    counter++, temp++;
+  }
+  return extension;
+}*/
 
+/*
+This is the first version of thread handler.
+Not working as i thought. No more use.
+*/
 // Thread_arg has the client side socket information.
-void * thread_handler(void * thread_arg){
+void * thread(void * thread_arg){
   int sock, read_len, nread;
   //FILE *p;
   //char *return_message;
@@ -301,6 +370,8 @@ int main(int argc, char **argv) {
   //char buffer[MAXSIZE];
   int port_number, listenid, n, thread_num=0;
   struct sockaddr_in server_address, client_addrress;
+  int optvalue=1;
+
   pthread_t threads[THREADNUM];
 
   //pthread_t thread_id;
@@ -323,6 +394,12 @@ int main(int argc, char **argv) {
   if(listenid<0)
     perror("Error on listening");
 
+  if(setsockopt(listenid, SOL_SOCKET, SO_REUSEADDR,&optvalue,
+    sizeof(optvalue)) < 0 ){
+    perror("Error when validating the socket. Abbort ");
+    return -1;
+  }
+  
   server_address.sin_family = AF_INET;
   server_address.sin_port = htons(port_number);
   server_address.sin_addr.s_addr = INADDR_ANY;
@@ -370,8 +447,8 @@ int main(int argc, char **argv) {
     args-> thread_id = threads[thread_num];
     args-> root_path = root_path;
     //Craete successfully will return value of 0.
-    printf("%d client socket\n", args->sockid);
-    if(pthread_create(&(threads[thread_num]), NULL, thread_handle_test,
+    //printf("%d client socket\n", args->sockid);
+    if(pthread_create(&(threads[thread_num]), NULL, thread_handler,
       (void *)args)){
       perror("Error Pthread");
       continue;
@@ -379,6 +456,8 @@ int main(int argc, char **argv) {
     //printf("%d\n", thread_num);
     thread_num ++;
   }
+  close(listenid);
+
 
   /**********************Second Version of thread creating
   while(client_sock = accept(listenid,(struct sockaddr * )&client_addrress,
@@ -427,6 +506,6 @@ int main(int argc, char **argv) {
     printf("ERROR writing to the socket \n");
     exit(1);
   }*/
-  close(listenid);
+
   return 0;
 }

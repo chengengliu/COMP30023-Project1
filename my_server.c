@@ -68,15 +68,16 @@ Close
 void * thread_handler(void * arg){
   thread_t targ = *(thread_t *)arg;
   char mes[1024];
+
   int read_len= read(targ.sockid, mes, 1024);
   if(read_len<0){
     perror("Error reading\n");
     exit(1);
   }
-  //write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
+
   char version[1024] = {0}, filepath[1024] = {0}, method[20] = {0};
   sscanf(mes, "%s %s %s", method, filepath, version);
-  //write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
+
   char url[1024] = {0};
   strcat(url,targ.root_path);
   strcat(url,filepath);
@@ -96,8 +97,6 @@ void * thread_handler(void * arg){
   strcat(header, FOUND);
   strcat(content_type, "Content-Type: ");
 
-  //extension = ext_extension(filepath); // i.e. get .html/...etc
-  //printf("%s\n", extension);
   if(strcmp(extension, ".html")==0){
     strcat(content_type, "text/html");
   }
@@ -110,33 +109,27 @@ void * thread_handler(void * arg){
   if(strcmp(extension, ".js")==0){
     strcat(content_type, "text/javascript");
   }
-  //strcat(header, extension);
+
   strcat(content_type, "\r\n\r\n");
 
 
   printf("%s", header);
   printf("%s", content_type);
-  //write(targ.sockid,header, strlen(header));
-
-
-  //write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
-  /*Url is correct */
-  /***********THis part is not correct as it cannot proceed test.
-   Just stuck there */
-  /* File path is correctly extracted*/
-
 
   FILE *fp;
   char buffer[1024]={0};
   fp = fopen(url, "r");
-  //write(targ.sockid, NOTFOUND, strlen(NOTFOUND));
+
   if(fp){
     write(targ.sockid,header, strlen(header));
     write(targ.sockid, content_type, strlen(content_type));
-    int nread = fread(buffer,1,sizeof(buffer),fp);
-    write(targ.sockid, buffer, nread);
-    //close(targ.sockid);
-    //close()
+    while(!feof(fp)){
+      int nread = fread(buffer,1,sizeof(buffer),fp);
+      if(nread < 0)
+        perror("Error reading the file");
+      write(targ.sockid, buffer, nread);
+      bzero(buffer, sizeof(buffer));
+    }
   }
 
   if(fp== NULL){
@@ -144,10 +137,7 @@ void * thread_handler(void * arg){
     close(targ.sockid);
     return NULL;
   }
-
-  //write(targ.sockid,NOTFOUND, sizeof(NOTFOUND));
   close(targ.sockid);
-  //printf("Client server closed %d\n", targ.sockid);
   return NULL;
 }
 
@@ -379,11 +369,11 @@ int main(int argc, char **argv) {
   char* root_path;
 
   if (argc < 2){
-    perror("Error. Need port number \n");
+    perror("Error. Need port number\n");
     exit(1);
   }
   if(argc < 3){
-    perror("Error. Need root path \n");
+    perror("Error. Need root path\n");
     exit(1);
   }
   port_number = atoi(argv[1]);
@@ -392,19 +382,19 @@ int main(int argc, char **argv) {
 
   listenid = socket(AF_INET, SOCK_STREAM, 0);
   if(listenid<0)
-    perror("Error on listening");
+    perror("Error on listening\n");
 
   if(setsockopt(listenid, SOL_SOCKET, SO_REUSEADDR,&optvalue,
     sizeof(optvalue)) < 0 ){
-    perror("Error when validating the socket. Abbort ");
+    perror("Error optmising socket\n");
     return -1;
   }
-  
+
   server_address.sin_family = AF_INET;
   server_address.sin_port = htons(port_number);
   server_address.sin_addr.s_addr = INADDR_ANY;
   if(bind(listenid,(struct sockaddr*)&server_address,sizeof(server_address))<0){
-    perror("Error bind");
+    perror("Error bind\n");
     exit(1);
   }
 
@@ -454,6 +444,7 @@ int main(int argc, char **argv) {
       continue;
     }
     //printf("%d\n", thread_num);
+    //free(args);
     thread_num ++;
   }
   close(listenid);

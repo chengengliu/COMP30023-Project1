@@ -63,8 +63,9 @@ void * thread_handler(void * arg){
   int counter =0;
   char* temp = filepath;
 
+  // Need to check this later. 
   while(*temp){
-    if(*temp == '.'){
+    if(*temp == '.' && *(temp+1)!= '.' && *(temp+1)!='/'){
       break;
     }
     counter++, temp++;
@@ -190,8 +191,7 @@ int main(int argc, char **argv) {
     args-> sockid = client_sock;
     args-> thread_id = threads[thread_num];
     args-> root_path = root_path;
-    //Craete successfully will return value of 0.
-    //printf("%d client socket\n", args->sockid);
+
     if(pthread_create(&(threads[thread_num]), NULL, thread_handler,
       (void *)args)){
       perror("Error Pthread");

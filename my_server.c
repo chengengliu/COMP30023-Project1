@@ -25,9 +25,8 @@ void * thread_handler(void * arg){
   char version[MAXSIZE] = {0}, filepath[MAXSIZE] = {0},
     method[MAXSIZE] = {0};
   sscanf(mes, "%s %s %s", method, filepath, version);
-
-  char url[MAXSIZE] = {0};
   //Combine root path and file path together to get abs path.
+  char url[MAXSIZE] = {0};
   strcat(url,targ.root_path);
   strcat(url,filepath);
 
@@ -73,7 +72,7 @@ void * thread_handler(void * arg){
     while(!feof(fp)){
       int nread = fread(buffer,1,sizeof(buffer),fp);
       if(nread < 0)
-        perror("Error reading the file");
+        perror("Error reading the file\n");
       write(targ.sockfd, buffer, nread);
       bzero(buffer, sizeof(buffer));
     }
@@ -95,7 +94,6 @@ void * thread_handler(void * arg){
 * Main function will build socket on server side and accept connection.
 * Pthread will be created and the task of thread is in thread_handler.
 */
-
 int main(int argc, char **argv) {
 
   int port_number, listenfd, thread_num=0;
@@ -147,12 +145,12 @@ int main(int argc, char **argv) {
       &client_len);
 
     if(client_sock < 0){
-      perror("Error on accepting connection ");
+      perror("Error on accepting connection\n");
       continue;
     }
     thread_t *args = malloc(sizeof(thread_t));
-    if(!args){
-      perror("Error allocating memory for thread");
+    if(args==NULL){
+      perror("Error allocating memory for thread\n");
     }
     args-> sockfd = client_sock;
     args-> thread_id = threads[thread_num];
@@ -160,7 +158,7 @@ int main(int argc, char **argv) {
 
     if(pthread_create(&(threads[thread_num]), NULL, thread_handler,
       (void *)args)){
-      perror("Error Pthread");
+      perror("Error Pthread\n");
       continue;
     }
     thread_num ++;

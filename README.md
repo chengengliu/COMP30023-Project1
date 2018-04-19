@@ -1,6 +1,4 @@
-This is Projec1 for COMP30023
-
-This is the day I start the project (Start reading through the spec lol )
+This is Project1 for COMP30023 Computer Systems.
 
 Nothing special to state about the project.
 Programming is fun! Have a nice day!

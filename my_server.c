@@ -63,7 +63,7 @@ void * thread_handler(void * arg){
   int counter =0;
   char* temp = filepath;
 
-  // Need to check this later. 
+  // Need to check this later.
   while(*temp){
     if(*temp == '.' && *(temp+1)!= '.' && *(temp+1)!='/'){
       break;
@@ -185,7 +185,6 @@ int main(int argc, char **argv) {
       perror("Error on accepting connection ");
       continue;
     }
-
     //pthread_t thread_id = threads[i];
     thread_t *args = malloc(sizeof(thread_t));
     args-> sockid = client_sock;
@@ -202,55 +201,5 @@ int main(int argc, char **argv) {
     thread_num ++;
   }
   close(listenid);
-
-
-  /**********************Second Version of thread creating
-  while(client_sock = accept(listenid,(struct sockaddr * )&client_addrress,
-    &client_len)){
-      printf("Connection accepted\n");
-      if(pthread_create(&thread_id, NULL, thread_handler,
-        (void *)client_addrress)){
-          perror("Error creating thread\n");
-          continue;
-      }
-      printf("Assigned connection to thread \n");
-
-    }*/
-
-
-  //**********single acception (used when doing socket connection test)*******
-  //These read and write procedure will be dedicated to
-  // pthread to do. But for now, it is just for test use.
-  /*
-
-
-  newsockid = accept(listenid, (struct sockaddr *)&client_addrress,
-    &client_len);
-
-  if(newsockid < 0){
-    printf("Client socket creation failed. \n");
-    exit(1);
-  }
-
-  n = read(newsockid, buffer, 255);
-  //Now the buffer holds information we need
-  if(n < 0){
-    //printf("Error reading from the socket\n");
-    perror("Read Error");
-    exit(1);
-  }*/
-  /*************************************************************************/
-
-  // Now move to the phase of getting content of GET request in http 1.0
-
-
-  //Write back to the client side
-  /*
-  n = write (newsockid, "Hello World", 18);
-  if(n< 0 ){
-    printf("ERROR writing to the socket \n");
-    exit(1);
-  }*/
-
   return 0;
 }

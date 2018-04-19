@@ -1,3 +1,8 @@
+/*
+* Written by Liu Chengeng   Student ID : 813174
+* This is the project 1 for COMP30023 Computer Systems.
+* All rights reserved.
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +23,7 @@
 
 struct thread{
   char * root_path;
-  int sockid;
+  int sockfd;
   pthread_t thread_id;
 };
 typedef struct thread thread_t;

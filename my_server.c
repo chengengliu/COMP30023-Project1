@@ -1,19 +1,20 @@
+/*
+* Written by Liu Chengeng   Student ID : 813174
+* This is the project 1 for COMP30023 Computer Systems.
+* All rights reserved.
+*/
 #include "my_server.h"
 
-
-
-/*This handler should do :
-Read
-Manipulate/Call the function to find specific file.
-Send
-Close
+/*
+* Thread handler is used to handle read/write in socket, including
+* looking for specific file. If success return the file and if fail
+* to fetch the file, return 404.
 */
-
 void * thread_handler(void * arg){
   thread_t targ = *(thread_t *)arg;
   char mes[1024];
 
-  int read_len= read(targ.sockid, mes, 1024);
+  int read_len= read(targ.sockfd, mes, 1024);
   if(read_len<0){
     perror("Error reading\n");
     exit(1);
@@ -66,23 +67,23 @@ void * thread_handler(void * arg){
   fp = fopen(url, "r");
 
   if(fp){
-    write(targ.sockid,header, strlen(header));
-    write(targ.sockid, content_type, strlen(content_type));
+    write(targ.sockfd,header, strlen(header));
+    write(targ.sockfd, content_type, strlen(content_type));
     while(!feof(fp)){
       int nread = fread(buffer,1,sizeof(buffer),fp);
       if(nread < 0)
         perror("Error reading the file");
-      write(targ.sockid, buffer, nread);
+      write(targ.sockfd, buffer, nread);
       bzero(buffer, sizeof(buffer));
     }
   }
 
   if(fp== NULL){
-    write(targ.sockid,NOTFOUND,strlen(NOTFOUND));
-    close(targ.sockid);
+    write(targ.sockfd,NOTFOUND,strlen(NOTFOUND));
+    close(targ.sockfd);
     return NULL;
   }
-  close(targ.sockid);
+  close(targ.sockfd);
   return NULL;
 }
 
@@ -124,27 +125,21 @@ int main(int argc, char **argv) {
 
   server_address.sin_family = AF_INET;
   server_address.sin_port = htons(port_number);
-  server_address.sin_addr.s_addr = INADDR_ANY;
-  if(bind(listenfd,(struct sockaddr*)&server_address,sizeof(server_address))<0){
-    perror("Error bind\n");
+  server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+  if(bind(listenfd,(struct sockaddr*)&server_address,
+    sizeof(server_address))<0){
+    perror("Error binding\n");
     exit(1);
   }
-
   // Announce willingness to accept incoming connection
   if(listen(listenfd, QUEUESIZE)<0){
-    //printf("Listen failed \n");
-    perror("Listen failed\n");
+    perror("Error listening\n");
     exit(1);
   }
-  /*Now accept a connection */
-  /*For now only create one connection */
+  //Loop to build threads to handle each incoming socket connection
   socklen_t client_len = sizeof(client_addrress);
-  /*Add pthread???? Multi-threading test*/
-  // I'm thinking maybe the first version(pthread creation) is better than
-  // The second version.
-  // This is the main loop for threading.
-
   while(TRUE){
+    //Build incoming connection.
     int client_sock = accept(listenfd, (struct sockaddr *)&client_addrress,
       &client_len);
 
@@ -152,9 +147,8 @@ int main(int argc, char **argv) {
       perror("Error on accepting connection ");
       continue;
     }
-    //pthread_t thread_id = threads[i];
     thread_t *args = malloc(sizeof(thread_t));
-    args-> sockid = client_sock;
+    args-> sockfd = client_sock;
     args-> thread_id = threads[thread_num];
     args-> root_path = root_path;
 
@@ -163,8 +157,6 @@ int main(int argc, char **argv) {
       perror("Error Pthread");
       continue;
     }
-    //printf("%d\n", thread_num);
-    //free(args);
     thread_num ++;
   }
   close(listenfd);

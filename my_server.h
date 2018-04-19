@@ -1,7 +1,9 @@
 /*
-* Written by Liu Chengeng   Student ID : 813174
+* Autor name: Liu Chengeng
+* Login ID : c.liu75@student.unimelb.edu.au
+* Student ID : 813174
 * This is the project 1 for COMP30023 Computer Systems.
-* All rights reserved.
+* All copyrights reserved.
 */
 #include <stdio.h>
 #include <stdlib.h>

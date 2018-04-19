@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <assert.h>
 
 #define TRUE 1
 #define MAXSIZE 1024

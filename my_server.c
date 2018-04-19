@@ -1,39 +1,6 @@
 #include "my_server.h"
 
-int create_socket(int port_number){
-  //struct sockaddr_in server_addr;
-  int listenid, optvalue=0;
 
-  if((listenid = socket(AF_INET, SOCK_STREAM, 0))<0){
-    //printf("Error when creating the socket\n");
-    perror("Listen Error ");
-
-    return -1;
-  }
-  // SO_REUSEADDR: Reuse of the local address is supported
-  // SOL_SOCKET: Options to be accessed at socket level, not protocol level.
-  if(setsockopt(listenid, SOL_SOCKET, SO_REUSEADDR,(const void *)&optvalue,
-          sizeof(optvalue)) < 0 ){
-            printf("Error when validating the socket. Abbort ");
-            return -1;
-  }
-  return listenid;
-}
-/*The socket will accept connection to All/Any IPs  */
-int bind_socket(struct sockaddr_in *server_address, int port_number,int listenid){
-
-  server_address-> sin_family = AF_INET;
-  server_address-> sin_port = htons(port_number);
-  // INADDR_ANY is "Any address" in IPV4
-  // after binding successuffly , It means the socket
-  //Will listen at any interface
-  server_address-> sin_addr.s_addr = INADDR_ANY;
-  if(bind(listenid, (struct sockaddr *)server_address,
-    sizeof(*server_address))<0){
-    return -1;
-  }
-  return 1;
-}
 
 /*This handler should do :
 Read
@@ -123,7 +90,7 @@ void * thread_handler(void * arg){
 int main(int argc, char **argv) {
   //struct sockaddr_in client_addr;
   //char buffer[MAXSIZE];
-  int port_number, listenid, n, thread_num=0;
+  int port_number, listenfd, n, thread_num=0;
   struct sockaddr_in server_address, client_addrress;
   int optvalue=1;
 
@@ -145,11 +112,11 @@ int main(int argc, char **argv) {
   root_path = argv[2];
 
 
-  listenid = socket(AF_INET, SOCK_STREAM, 0);
-  if(listenid<0)
+  listenfd = socket(AF_INET, SOCK_STREAM, 0);
+  if(listenfd<0)
     perror("Error on listening\n");
 
-  if(setsockopt(listenid, SOL_SOCKET, SO_REUSEADDR,&optvalue,
+  if(setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR,&optvalue,
     sizeof(optvalue)) < 0 ){
     perror("Error optmising socket\n");
     return -1;
@@ -158,13 +125,13 @@ int main(int argc, char **argv) {
   server_address.sin_family = AF_INET;
   server_address.sin_port = htons(port_number);
   server_address.sin_addr.s_addr = INADDR_ANY;
-  if(bind(listenid,(struct sockaddr*)&server_address,sizeof(server_address))<0){
+  if(bind(listenfd,(struct sockaddr*)&server_address,sizeof(server_address))<0){
     perror("Error bind\n");
     exit(1);
   }
 
   // Announce willingness to accept incoming connection
-  if(listen(listenid, QUEUESIZE)<0){
+  if(listen(listenfd, QUEUESIZE)<0){
     //printf("Listen failed \n");
     perror("Listen failed\n");
     exit(1);
@@ -178,7 +145,7 @@ int main(int argc, char **argv) {
   // This is the main loop for threading.
 
   while(TRUE){
-    int client_sock = accept(listenid, (struct sockaddr *)&client_addrress,
+    int client_sock = accept(listenfd, (struct sockaddr *)&client_addrress,
       &client_len);
 
     if(client_sock < 0){
@@ -200,6 +167,6 @@ int main(int argc, char **argv) {
     //free(args);
     thread_num ++;
   }
-  close(listenid);
+  close(listenfd);
   return 0;
 }

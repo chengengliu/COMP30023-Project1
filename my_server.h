@@ -17,7 +17,6 @@
 
 #define TRUE 1
 #define MAXSIZE 1024
-#define QUEUESIZE 1024
 #define THREADNUM 200
 #define NOTFOUND "HTTP/1.0 404 NOT FOUND\r\n"
 #define FOUND "HTTP/1.0 200 OK\r\n"

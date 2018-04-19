@@ -12,23 +12,25 @@
 */
 void * thread_handler(void * arg){
   thread_t targ = *(thread_t *)arg;
-  char mes[1024];
+  char mes[MAXSIZE];
 
-  int read_len= read(targ.sockfd, mes, 1024);
+  int read_len= read(targ.sockfd, mes, MAXSIZE);
   if(read_len<0){
     perror("Error reading\n");
     exit(1);
   }
 
-  char version[1024] = {0}, filepath[1024] = {0}, method[20] = {0};
+  char version[MAXSIZE] = {0}, filepath[MAXSIZE] = {0},
+    method[MAXSIZE] = {0};
   sscanf(mes, "%s %s %s", method, filepath, version);
 
-  char url[1024] = {0};
+  char url[MAXSIZE] = {0};
   //Combine root path and file path together to get abs path.
   strcat(url,targ.root_path);
   strcat(url,filepath);
 
-  char header[200] = {0}, extension[200] = {0}, content_type[200] = {0};
+  char header[MAXSIZE] = {0}, extension[MAXSIZE] = {0},
+    content_type[MAXSIZE] = {0};
   int counter =0;
   char* temp = filepath;
 
@@ -56,11 +58,10 @@ void * thread_handler(void * arg){
   if(strcmp(extension, ".js")==0){
     strcat(content_type, "text/javascript");
   }
-
   strcat(content_type, "\r\n\r\n");
 
   FILE *fp;
-  char buffer[1024]={0};
+  char buffer[MAXSIZE]={0};
   fp = fopen(url, "r");
   //If find the file under the dirc. Write back the header and file.
   if(fp){
@@ -132,7 +133,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
   // Announce willingness to accept incoming connection
-  if(listen(listenfd, QUEUESIZE)<0){
+  if(listen(listenfd, MAXSIZE)<0){
     perror("Error listening\n");
     exit(1);
   }

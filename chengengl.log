@@ -1,0 +1,71 @@
+Starting automated marking of chengengl
+Looking for project folder
+Found project directory ./comp30023-2018-project-1
+Commit Time: 2018-04-19T23:05:42+10:00, with Hash: 4cc25330c55f7efa1aceae949ca098facc2d61ac
+Submission is before deadline
+
+Running make clean
+rm my_server
+make clean found and run
+
+Running make
+gcc my_server.c -o my_server -lpthread
+Executable created after make call
+
+Looking for executable
+server exe NOT FOUND
+Alternative executable found ./my_server
+Starting server (7229), saving log:
+Server (7229), started with PID: 15590
+Test 1: GET HTML file in root: PASS
+Test 2: GET Non-existent HTML file in root: PASS
+Test 3: GET CSS file in root: PASS
+Test 4: GET JavaScript file in root: PASS
+Test 5: GET JPEG file in root: PASS
+Test 6: GET HTML file in directory: PASS
+Test 7: GET CSS file in directory: PASS
+Test 8: GET JavaScript file in directory: PASS
+Test 9: GET JPEG file in directory: PASS
+
+Starting Multi-Thread Tests
+Starting small file speed test at 1525252823450
+Test 13: Speed test: PASS
+Small file took 14 to download
+Requesting large file with 10 second download
+Waiting 2 seconds before starting small file check
+Starting small file check at 1525252825469
+Test 11: GET HTML file in root: PASS
+Small file check finished at 1525252825483, took 14
+Waiting for large file to finish
+Test 10: GET Large JPEG file in directory: PASS
+Large file check finished at 1525252833477, took 10012
+Small file completed at least 2 seconds before large file
+Small file completed within 10 times normal time - threading check PASS
+Server process stopped (15590)
+
+
+Start Feedback Comments
+=======================
+
+* The code looks really good. Overall correct structure.
+* Used sscanf() to parse the GET request followed by strcat(), both of these
+are unsafe if the GET request contains excessively long components. Use another
+way like strtok_r() and inspect the length before copying the parts anywhere.
+* Note that strcpy() is easier and faster than strcat() onto an empty string.
+* Scan for '.' to find extension, but bear in mind that files like *.css.tmp
+will be detected as *.css and so will directories e.g. dir.html/silly.css would
+be detected as an HTML file not a CSS file, which is incorrect.
+* Please supply a default MIME type, use if...else if...else if...else style.
+* Really nice loop to copy the file block-by-block, but no need bzero() here.
+* Redundant tests, if (fp!=NULL){...} if (fp==NULL){...} should use "else".
+* Great use of close() and free(). But you also need fclose(fp).
+* Nice SO_REUSEADDR.
+* Nice pthread_create() and especially nice that you passed it a structure in
+a malloc() block not the stack to avoid race conditions. But you need also the
+pthread_detach() call because your current code will leak thread descriptors.
+* Overall really nice readable code. Excellent effort. Well done.
+
+
+
+=======================
+End Feedback Comments
